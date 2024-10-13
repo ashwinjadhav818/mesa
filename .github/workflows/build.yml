@@ -1,0 +1,44 @@
+name: Build Mesa on Arch Linux
+
+on:
+  push:
+    branches:
+      - main  # Adjust to your branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v3
+
+    - name: Set up Arch Linux Docker container
+      run: |
+        docker pull archlinux:latest
+        docker run -d --name arch-mesa -v ${{ github.workspace }}:/workspace -w /workspace archlinux:latest tail -f /dev/null
+
+    - name: Install dependencies on Arch Linux
+      run: |
+        docker exec arch-mesa bash -c "pacman -Sy --noconfirm base-devel meson ninja gcc python python-pip wayland vulkan-headers libx11 libxext libxdamage libxfixes libxcb libxxf86vm"
+    
+    - name: Configure the build on Arch Linux
+      run: |
+        docker exec arch-mesa bash -c "meson setup build -Dbuildtype=release -Dplatforms=x11 -Ddri-drivers=auto -Dvulkan-drivers=auto"
+
+    - name: Compile Mesa on Arch Linux
+      run: |
+        docker exec arch-mesa bash -c "meson compile -C build"
+
+    - name: Run tests on Arch Linux
+      run: |
+        docker exec arch-mesa bash -c "meson test -C build"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: mesa-build
+        path: ./build/  # Adjust path to where the compiled files or installer are located
+    
+    - name: Cleanup
+      run: docker rm -f arch-mesa
