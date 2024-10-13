@@ -558,25 +558,25 @@ package_mesa-docs() {
 
 package_microsoft-dozen-driver() {
   pkgdesc="Microsoft dozen driver"
-  depends=(
-    'expat'
-    'gcc-libs'
-    'glibc'
-    'libdrm'
-    'libelf'
-    'libx11'
-    'libxcb'
-    'libxshmfence'
-    'llvm-libs'
-    'zlib'
-    'zstd'
-  )
+  depends=('expat'
+           'gcc-libs'
+           'glibc'
+           'libdrm'
+           'libelf'
+           'libx11'
+           'libxcb'
+           'libxshmfence'
+           'llvm-libs'
+           'zlib'
+           'zstd')
   provides=('microsoft-dozen-driver')
 
-  _install fakeinstall/usr/share/vulkan/icd.d/dzn_icd.x86_64.json
-  _install fakeinstall/$_libdir/libvulkan_dzn.so*
+  # Ensure the necessary files are installed
+  install -Dm644 fakeinstall/usr/share/vulkan/icd.d/dzn_icd.x86_64.json "$pkgdir/usr/share/vulkan/icd.d/dzn_icd.x86_64.json"
+  install -Dm644 fakeinstall/$_libdir/libvulkan_dzn.so* "$pkgdir/$_libdir/libvulkan_dzn.so"
 
-  install -Dm644 mesa-$pkgver/docs/license.rst -t "$pkgdir/usr/share/licenses/$pkgname"
+  # Install the license file
+  install -Dm644 docs/license.rst -t "$pkgdir/usr/share/licenses/$pkgname"
 }
 
 # vim:set sw=2 sts=-1 et:
