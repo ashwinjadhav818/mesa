@@ -16,7 +16,7 @@ makedepends=(
     'meson'
     'ninja'
     'glslang'
-    # 'directx-headers-git'
+    'directx-headers-git'
     'python-mako'
     'python-ply'
     'cbindgen'
