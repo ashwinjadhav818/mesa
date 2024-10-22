@@ -27,6 +27,11 @@ jobs:
         docker exec arch-builder bash -c "useradd -m builder && echo 'builder ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers"
         docker exec arch-builder bash -c "chown -R builder /workspace"
 
+    - name: Install yay (AUR helper)
+      run: |
+        docker exec -u builder arch-builder bash -c "git clone https://aur.archlinux.org/yay.git /tmp/yay && cd /tmp/yay && makepkg -si --noconfirm"
+        docker exec -u builder arch-builder bash -c "rm -rf /tmp/yay"
+
     - name: Import missing PGP keys (if necessary)
       run: |
         docker exec -u builder arch-builder bash -c "gpg --keyserver keyserver.ubuntu.com --recv-keys 8D8E31AFC32428A6 || true"
@@ -38,8 +43,8 @@ jobs:
           python-mako python-ply cbindgen wayland-protocols cmake \
           python-packaging python-pyaml llvm rust rust-bindgen"
 
-        # If directx-headers-git is needed, consider using an AUR helper
-        # docker exec -u builder arch-builder bash -c "yay -S --noconfirm directx-headers-git"
+        # Install directx-headers-git using yay
+        docker exec -u builder arch-builder bash -c "yay -S --noconfirm directx-headers-git"
 
     - name: Build the package using PKGBUILD (as non-root user)
       run: |
