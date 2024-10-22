@@ -18,7 +18,7 @@ jobs:
         docker pull archlinux:latest
         docker run -d --name arch-builder -v ${{ github.workspace }}:/workspace -w /workspace archlinux:latest tail -f /dev/null
 
-    - name: Install dependencies for building on Arch Linux
+    - name: Install base-devel and other dependencies
       run: |
         docker exec arch-builder bash -c "pacman -Sy --noconfirm base-devel git"
 
@@ -29,7 +29,17 @@ jobs:
 
     - name: Import missing PGP keys (if necessary)
       run: |
-        docker exec -u builder arch-builder bash -c "gpg --keyserver keyserver.ubuntu.com --recv-keys 8D8E31AFC32428A6"
+        docker exec -u builder arch-builder bash -c "gpg --keyserver keyserver.ubuntu.com --recv-keys 8D8E31AFC32428A6 || true"
+
+    - name: Install dependencies for the package
+      run: |
+        docker exec -u builder arch-builder bash -c "sudo pacman -Sy --noconfirm \
+          libvdpau libva elfutils libxrandr meson ninja glslang \
+          python-mako python-ply cbindgen wayland-protocols cmake \
+          python-packaging python-pyaml llvm rust rust-bindgen"
+
+        # If directx-headers-git is needed, consider using an AUR helper
+        # docker exec -u builder arch-builder bash -c "yay -S --noconfirm directx-headers-git"
 
     - name: Build the package using PKGBUILD (as non-root user)
       run: |
